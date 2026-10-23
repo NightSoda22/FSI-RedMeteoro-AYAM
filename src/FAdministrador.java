@@ -1,20 +1,21 @@
-
 import javax.swing.JOptionPane;
-
 
 public class FAdministrador extends javax.swing.JFrame {
 
     Conexion cnx = new Conexion();
-    
+
     public FAdministrador() {
         initComponents();
         setLocationRelativeTo(null);
-        
-//        if (cnx.conectar("localhost", "redmeteoro", "root", "") == 1) {
-//        } else {
-//            JOptionPane.showMessageDialog(this, "Sin conexión. La ventana se cerrará...");
-//            System.exit(0);
-//        }
+        setTitle("Registro de usuarios");
+
+        if (cnx.conectar("localhost", "redmeteoro", "manzana", "1234") == 1) {
+            cnx.entablar(Usuario.todos, TUsuarios);
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Sin conexión. La ventana se cerrará...");
+            System.exit(0);
+        }
     }
 
     /**
@@ -97,7 +98,7 @@ public class FAdministrador extends javax.swing.JFrame {
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel8)))
-                .addContainerGap(12, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(LUsuario)
@@ -111,6 +112,11 @@ public class FAdministrador extends javax.swing.JFrame {
         BRegistrar.setFocusable(false);
         BRegistrar.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         BRegistrar.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        BRegistrar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BRegistrarActionPerformed(evt);
+            }
+        });
         jToolBar1.add(BRegistrar);
 
         BModificar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/Edit.png"))); // NOI18N
@@ -118,6 +124,11 @@ public class FAdministrador extends javax.swing.JFrame {
         BModificar.setFocusable(false);
         BModificar.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         BModificar.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        BModificar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BModificarActionPerformed(evt);
+            }
+        });
         jToolBar1.add(BModificar);
         jToolBar1.add(jSeparator1);
 
@@ -135,6 +146,11 @@ public class FAdministrador extends javax.swing.JFrame {
         BBuscar.setMinimumSize(new java.awt.Dimension(73, 60));
         BBuscar.setPreferredSize(new java.awt.Dimension(73, 60));
         BBuscar.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        BBuscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BBuscarActionPerformed(evt);
+            }
+        });
         jToolBar1.add(BBuscar);
         jToolBar1.add(jSeparator2);
 
@@ -167,6 +183,11 @@ public class FAdministrador extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        TUsuarios.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                TUsuariosMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(TUsuarios);
 
         jLabel5.setText("Usuario:");
@@ -235,6 +256,72 @@ public class FAdministrador extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void BRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BRegistrarActionPerformed
+        Usuario usr = new Usuario(
+                0,
+                TNombre.getText(),
+                TUsuario.getText(),
+                TClave.getText(),
+                CBRol.getSelectedItem().toString(),
+                CBEstado.getSelectedItem().toString()
+        );
+
+        if (usr.insertar(cnx.con) == 1) {
+            JOptionPane.showMessageDialog(this, "USUARIO REGISTRADO.");
+        } else {
+            JOptionPane.showMessageDialog(this, "ERROR AL REGISTRAR EL USUARIO.");
+        }
+    }//GEN-LAST:event_BRegistrarActionPerformed
+
+    private void BModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BModificarActionPerformed
+        int fila = TUsuarios.getSelectedRow();
+        int id = fila >= 0 ? Integer.parseInt(TUsuarios.getValueAt(fila, 0).toString()) : 0;
+
+        Usuario usr = new Usuario(
+                id,
+                TNombre.getText(),
+                TUsuario.getText(),
+                TClave.getText(),
+                CBRol.getSelectedItem().toString(),
+                CBEstado.getSelectedItem().toString()
+        );
+
+        if (usr.actualizar(cnx.con) == 1) {
+            JOptionPane.showMessageDialog(this, "USUARIO ACTUALIZADO.");
+        } else {
+            JOptionPane.showMessageDialog(this, "ERROR AL ACTUALIZAR EL USUARIO.");
+        }
+    }//GEN-LAST:event_BModificarActionPerformed
+
+    private void TUsuariosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TUsuariosMouseClicked
+        int fila = TUsuarios.getSelectedRow();
+        if (fila >= 0) {
+            TNombre.setText(TUsuarios.getValueAt(fila, 1).toString());
+            TUsuario.setText(TUsuarios.getValueAt(fila, 2).toString());
+            TClave.setText(TUsuarios.getValueAt(fila, 3).toString());
+            CBRol.setSelectedItem(TUsuarios.getValueAt(fila, 4).toString());
+            CBEstado.setSelectedItem(TUsuarios.getValueAt(fila, 5).toString());
+        }
+    }//GEN-LAST:event_TUsuariosMouseClicked
+
+    private void BBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BBuscarActionPerformed
+        String busqueda = jTextField1.getText().trim();
+        String sql = busqueda.isEmpty() ? Usuario.todos : "SELECT * FROM usuarios WHERE nombre LIKE '%" + busqueda + "%' OR nom_usr LIKE '%" + busqueda + "%'";
+        cnx.entablar(sql, TUsuarios);
+
+        // Si se encontraron resultados, mostrar automáticamente el primer registro en los campos
+        if (TUsuarios.getRowCount() > 0) {
+            TUsuarios.setRowSelectionInterval(0, 0);
+            TNombre.setText(TUsuarios.getValueAt(0, 1).toString());
+            TUsuario.setText(TUsuarios.getValueAt(0, 2).toString());
+            TClave.setText(TUsuarios.getValueAt(0, 3).toString());
+            CBRol.setSelectedItem(TUsuarios.getValueAt(0, 4).toString());
+            CBEstado.setSelectedItem(TUsuarios.getValueAt(0, 5).toString());
+        } else {
+            JOptionPane.showMessageDialog(this, "No se encontró ningún usuario.");
+        }
+    }//GEN-LAST:event_BBuscarActionPerformed
 
     /**
      * @param args the command line arguments
